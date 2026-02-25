@@ -21,10 +21,10 @@ public class Airbnb {
 
     private String name;
 
-    @Column(nullable = false)
-    private BigDecimal description;
+    private String description;
 
-    private String price;
+    @Column(nullable = false)
+    private BigDecimal price;
 
     private String location;
 

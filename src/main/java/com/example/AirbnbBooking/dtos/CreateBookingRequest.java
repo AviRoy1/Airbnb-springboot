@@ -5,18 +5,20 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 public class CreateBookingRequest {
 
     @NotNull(message = "User ID is required")
-    private String userId;
+    private Long userId;
 
     @NotNull(message = "Airbnb ID is required")
-    private String airbnbId;
+    private Long airbnbId;
 
     @NotNull(message = "Check-in is required")
-    private String checkInDate;
+    private LocalDate checkInDate;
 
     @NotNull(message = "Check-out is required")
-    private String checkOutDate;
+    private LocalDate checkOutDate;
 }

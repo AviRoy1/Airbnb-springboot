@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "bookings")
@@ -33,6 +34,13 @@ public class Booking {
 
     @Column(unique = true)
     private String idempotencyKey;
+
+    @Column(nullable = false)
+    private LocalDate checkInDate;
+
+    @Column(nullable = false)
+    private LocalDate checkOutDate;
+
 
     private enum BookingStatus {
         PENDING, CONFIRMED, CANCELLED
