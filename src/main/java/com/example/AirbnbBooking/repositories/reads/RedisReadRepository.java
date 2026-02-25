@@ -1,10 +1,12 @@
 package com.example.AirbnbBooking.repositories.reads;
 
 import com.example.AirbnbBooking.models.Airbnb;
+import com.example.AirbnbBooking.models.Booking;
 import com.example.AirbnbBooking.models.readModel.AirbnbReadModel;
 import com.example.AirbnbBooking.models.readModel.AvailabilityReadModel;
 import com.example.AirbnbBooking.models.readModel.BookingReadModel;
 import io.lettuce.core.json.RedisJsonException;
+import io.netty.util.internal.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -84,6 +86,22 @@ public class RedisReadRepository {
         } catch(JacksonException e) {
             throw new RuntimeException("Failed to parse Availability read model from redis. ", e);
         }
+    }
+
+    public BookingReadModel findBookingByIdempotencyKey(String idempotencyKey) {
+        Set<String> keys = redisTemplate.keys(BOOKING_KEY_PREFIX + "*");
+        if(keys.isEmpty())
+            return null;
+
+        return keys.stream().map(key -> {
+            String value = redisTemplate.opsForValue().get(key);
+            if(StringUtil.isNullOrEmpty(value))
+                return null;
+            return objectMapper.readValue(value, BookingReadModel.class);
+        }).filter(Objects::nonNull)
+                .filter(e -> e.getIdempotencyKey().equalsIgnoreCase(idempotencyKey))
+                .findFirst().orElse(null);
+
     }
 
 }

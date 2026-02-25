@@ -12,6 +12,7 @@ import com.example.AirbnbBooking.repositories.writes.BookingWriteRepository;
 import com.example.AirbnbBooking.services.concurrency.ConcurrencyControlStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -31,6 +32,7 @@ public class BookingService implements IBookingService{
     private final RedisWriteRepository redisWriteRepository;
 
     @Override
+    @Transactional
     public Booking createBooking(CreateBookingRequest createBookingRequest) {
         Airbnb airbnb = airbnbWriteRepository.findById(createBookingRequest.getAirbnbId())
                 .orElseThrow(() -> new RuntimeException("Airbnb not available!!"));
@@ -66,6 +68,7 @@ public class BookingService implements IBookingService{
     }
 
     @Override
+    @Transactional
     public Booking updateBooking(UpdatedBookingRequest updatedBookingRequest) {
         return null;
     }
