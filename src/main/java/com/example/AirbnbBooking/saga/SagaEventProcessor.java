@@ -1,0 +1,45 @@
+package com.example.AirbnbBooking.saga;
+
+import com.example.AirbnbBooking.services.handlers.AvailabilityEventHandler;
+import com.example.AirbnbBooking.services.handlers.BookingEventHandler;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class SagaEventProcessor {
+
+    private final BookingEventHandler bookingEventHandler;
+    private final AvailabilityEventHandler availabilityEventHandler;
+
+    public void processEvent(SagaEvent sagaEvent) {
+        switch (sagaEvent.getEventType()) {
+            case "BOOKING_CREATED" :
+                // No action required.
+                break;
+            case "BOOKING_CONFIRM_REQUESTED":
+                bookingEventHandler.handleBookingConfirmRequest(sagaEvent);
+                break;
+            case "BOOKING_CONFIRMED":
+                availabilityEventHandler.handleBookingConfirmed(sagaEvent);
+                log.info("Booking confirmed for the booking id: {}", sagaEvent.getPayload().get("bookingId"));
+                break;
+            case "BOOKING_CANCEL_REQUESTED":
+                bookingEventHandler.handleBookingCancelRequest(sagaEvent);
+                break;
+            case "BOOKING_CANCELLED":
+                availabilityEventHandler.handleBookingCancelled(sagaEvent);
+                log.info("Booking cancelled for the booking id: {}", sagaEvent.getPayload().get("bookingId"));
+                break;
+            case "BOOKING_COMPENSATED":
+                log.info("Booking compensated for the booking id: {}", sagaEvent.getPayload().get("bookingId"));
+                break;
+            default:
+                break;
+        }
+    }
+
+}

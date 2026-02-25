@@ -42,7 +42,7 @@ public class Booking {
     private LocalDate checkOutDate;
 
 
-    private enum BookingStatus {
+    public enum BookingStatus {
         PENDING, CONFIRMED, CANCELLED
     }
 }
