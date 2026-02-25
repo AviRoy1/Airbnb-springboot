@@ -18,11 +18,11 @@ public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
-    private String userId;
+    private Long userId;
 
-    private String airbnbId;
+    private Long airbnbId;
 
     private BigDecimal totalPrice;
 
