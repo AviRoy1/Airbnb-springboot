@@ -1,5 +1,6 @@
 package com.example.AirbnbBooking.repositories.reads;
 
+import com.example.AirbnbBooking.models.Airbnb;
 import com.example.AirbnbBooking.models.readModel.AirbnbReadModel;
 import com.example.AirbnbBooking.models.readModel.AvailabilityReadModel;
 import com.example.AirbnbBooking.models.readModel.BookingReadModel;
@@ -9,6 +10,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
@@ -33,6 +38,24 @@ public class RedisReadRepository {
         }catch(JacksonException e) {
             throw new RuntimeException("Failed to parse Airbnb read model from redis. ", e);
         }
+    }
+
+    public List<AirbnbReadModel> findAllAirbnbs() {
+        Set<String> keys = redisTemplate.keys(AIRBNB_KEY_PREFIX + "*");
+
+        if(keys.isEmpty())
+            return List.of();
+
+        return keys.stream().map(key -> {
+            String value = redisTemplate.opsForValue().get(key);
+            if(value==null)
+                return null;
+            try {
+                return objectMapper.readValue(value, AirbnbReadModel.class);
+            } catch (JacksonException e){
+                throw new RuntimeException("Failed to parse Airbnb read model from redis. ", e);
+            }
+        }).filter(Objects::nonNull).toList();
     }
 
     public BookingReadModel findBookingById(Long id){
