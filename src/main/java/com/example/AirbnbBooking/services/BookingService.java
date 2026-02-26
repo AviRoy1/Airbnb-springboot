@@ -9,6 +9,7 @@ import com.example.AirbnbBooking.repositories.reads.RedisWriteRepository;
 import com.example.AirbnbBooking.repositories.writes.AirbnbWriteRepository;
 import com.example.AirbnbBooking.repositories.writes.AvailabilityWriteRepository;
 import com.example.AirbnbBooking.repositories.writes.BookingWriteRepository;
+import com.example.AirbnbBooking.saga.SagaEventPublisher;
 import com.example.AirbnbBooking.services.concurrency.ConcurrencyControlStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +29,8 @@ public class BookingService implements IBookingService{
     private final AirbnbWriteRepository airbnbWriteRepository;
     private final ConcurrencyControlStrategy concurrencyControlStrategy;
     private final RedisWriteRepository redisWriteRepository;
+    private final IIdempotencyService iIdempotencyService;
+    private final SagaEventPublisher sagaEventPublisher;
 
     @Override
     @Transactional
@@ -69,7 +70,25 @@ public class BookingService implements IBookingService{
 
     @Override
     @Transactional
-    public Booking updateBooking(UpdatedBookingRequest updatedBookingRequest) {
-        return null;
+    public void updateBooking(UpdatedBookingRequest updatedBookingRequest) {
+        Booking booking = iIdempotencyService.findBookingByIdempotencyKey(updatedBookingRequest.getIdempotencyKey())
+                .orElseThrow(() -> new RuntimeException("Booking not found!!"));
+        if(booking.getBookingStatus() != Booking.BookingStatus.PENDING)
+            throw new RuntimeException("Booking is not pending.");
+
+        if(updatedBookingRequest.getBookingStatus().equalsIgnoreCase(Booking.BookingStatus.CONFIRMED.toString())) {
+            sagaEventPublisher.publishEvent("BOOKING_CONFIRM_REQUESTED", "CONFIRM_BOOKING", getPayloadForSagaEvent(booking));
+        } else {
+            sagaEventPublisher.publishEvent("BOOKING_CANCEL_REQUESTED", "CANCEL_BOOKING", getPayloadForSagaEvent(booking));
+        }
+    }
+
+    private static Map<String, Object> getPayloadForSagaEvent(Booking booking) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("bookingId", booking.getId());
+        payload.put("airbnbId", booking.getAirbnbId());
+        payload.put("checkInDate", booking.getCheckInDate());
+        payload.put("checkOutDate", booking.getCheckOutDate());
+        return payload;
     }
 }

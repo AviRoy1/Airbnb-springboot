@@ -8,6 +8,6 @@ public interface IBookingService {
 
     Booking createBooking(CreateBookingRequest createBookingRequest);
 
-    Booking updateBooking(UpdatedBookingRequest updatedBookingRequest);
+    void updateBooking(UpdatedBookingRequest updatedBookingRequest);
 
 }

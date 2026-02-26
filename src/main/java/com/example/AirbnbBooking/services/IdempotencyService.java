@@ -20,7 +20,7 @@ public class IdempotencyService implements IIdempotencyService{
 
     @Override
     public boolean ifIdempotencyKeyExist(String idempotencyKey) {
-        return false;
+        return this.findBookingByIdempotencyKey(idempotencyKey).ifPresent();
     }
 
     @Override
