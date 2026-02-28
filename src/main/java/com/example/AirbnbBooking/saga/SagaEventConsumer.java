@@ -22,7 +22,7 @@ public class SagaEventConsumer {
     private final ObjectMapper objectMapper;
     private final SagaEventProcessor sagaEventProcessor;
 
-    @Scheduled(fixedDelay = 700)
+//    @Scheduled(fixedDelay = 700)
     public void consumeEvent() {
         try {
             String eventJson = redisTemplate.opsForList().leftPop(SAGA_QUEUE, 1, TimeUnit.SECONDS);
